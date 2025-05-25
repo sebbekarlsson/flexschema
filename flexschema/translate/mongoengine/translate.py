@@ -45,7 +45,11 @@ def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list
         content = ''
         name = schema.key or f'SomeObject'
         name = name.replace(' ', '').title()
-        content += ((f'class {name}({base_class}):') + '\n')
+        baseclass_args = schema.meta.get('baseclass_args', dict())
+        baseclass_args_str = ','.join(map(lambda x: f'{x[0]}={x[1]}',list(baseclass_args.items())))
+        suffix = f'({baseclass_args_str})' if baseclass_args_str else ''
+        
+        content += ((f'class {name}({base_class}{suffix}):') + '\n')
         for k, v in schema.properties.items():
             vstr = trans(v)
             mark = ':Any'
@@ -67,8 +71,16 @@ def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list
                 if v.type == ESchemaType.UNKNOWN:
                     if v.typename:
                         mark = f':{v.typename}'
-                if v.ref and isinstance(v.ref, str):
-                    mark = f":'{v.ref}'"
+                if v.ref:
+                    if isinstance(v.ref, str):
+                        mark = f":'{v.ref}'"
+                    elif isinstance(v.ref, SchemaBase):
+                        key = v.ref.key or '_unknown_'
+
+                        if len(v.ref.enum) > 0:
+                            key = f'E{key}'
+                        
+                        mark = f':{key}'
             if mark == ':Any':
                 deps.add('from typing import Any')
             content += pad_left(f'{k}{mark} = {vstr}  # pyright: ignore\n', 4)
@@ -101,6 +113,9 @@ def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list
         if schema.ref and isinstance(schema.ref, str):
             deps.add('from mongoengine import ReferenceField')
             return f"ReferenceField('{schema.ref}')"
+        elif schema.ref and isinstance(schema.ref, SchemaBase) and len(schema.ref.enum) <= 0:
+            deps.add('from mongoengine import ReferenceField')
+            return f"ReferenceField('{schema.ref.key}')"
         elif schema.type == ESchemaType.OBJECT:
             classname = make_class(schema)
             return classname

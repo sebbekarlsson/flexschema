@@ -35,6 +35,7 @@ class SchemaBase(abc.ABC):
     default: Any | None = FIELD(default=None)
     unique: bool = FIELD(default=False)
     ref: 'str | AnySchema | None' = FIELD(default=None)
+    meta: dict[str, Any] = FIELD(default_factory=dict)
 
     @classmethod
     def get_fields(cls) -> list[dataclasses.Field]:
@@ -117,10 +118,9 @@ AnySchema: TypeAlias = SchemaNull | SchemaArray | SchemaObject | SchemaFloat | S
 
 def parse(
     data: dict,
+    context: dict[str, AnySchema] | None = None
 ) -> AnySchema:
-
-    context = data.copy()
-    all_schemas: dict[str, AnySchema] = {}
+    context = context or dict()
     
     def _parse(
         data: dict,
@@ -137,6 +137,14 @@ def parse(
 
 
         for k, v in data.items():
+            if k == 'meta':
+                copy[k] = v
+                continue
+            if k == '$ref':
+                other = context.get(v)
+                if other and isinstance(other, SchemaBase):
+                    copy[translate_key(k)] = other
+                    continue
             if isinstance(v, dict):
                 if k == 'items':
                     copy[k] = _parse(v, [*crumbs, k], k)
@@ -173,10 +181,6 @@ def parse(
             copy['type'] = ESchemaType.UNKNOWN
 
         parsed = cast(AnySchema, clazz(**copy))
-        if isinstance(parsed, SchemaBase):
-            key = parsed.key
-            if key:
-                all_schemas[key] = parsed
         return parsed 
 
     return _parse(data, crumbs=[])

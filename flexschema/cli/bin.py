@@ -85,7 +85,7 @@ class TranslationUnit:
     translation: Translation
     filepath: str
 
-def process_schema(schema: AnySchema, i: int) -> list[TranslationUnit]:
+def process_schema(schema: AnySchema, i: int, context: dict[str, AnySchema]) -> list[TranslationUnit]:
     name = ((schema.key if isinstance(schema, SchemaBase) else None) or f'schema_{i}').replace(' ', '')
 
     typescript_filename = f'{name}.ts'
@@ -118,8 +118,16 @@ def run():
         raise Exception('Not an array') # pyright: ignore
 
     
+    context: dict[str, AnySchema] = {}
+    schemas: list[AnySchema] = []
 
-    schemas = [parse(item) for item in json_data]
+    for item in json_data:
+        schema = parse(item, context=context)
+        schemas.append(schema)
+        if isinstance(schema, SchemaBase):
+            key = schema.key
+            if key:
+                context[key] = schema
 
     if args.out_name and args.out_dir:
         outputs: dict[str, list[str]] = {}
@@ -129,7 +137,7 @@ def run():
         
         for i, schema in enumerate(schemas):
             if isinstance(schema, SchemaBase):
-                units = process_schema(schema, i)
+                units = process_schema(schema, i,  context)
 
                 for unit in units:
                     _, ext = splitext(unit.filepath)
@@ -170,7 +178,7 @@ def run():
 
         for i, schema in enumerate(schemas):
             if isinstance(schema, SchemaBase):
-                units = process_schema(schema, i)
+                units = process_schema(schema, i, context)
 
                 for unit in units:
                     code = ''

@@ -1,13 +1,21 @@
 [
   {
+    "type": "string",
+    "title": "Stuff",
+    "enum": ["STUFF1", "STUFF2", "STUFF3"]
+  },
+  {
     "$id": "https://example.com/complex-object.schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "Complex Object",
     "type": "object",
+    "meta": {
+      "baseclass_args": { "keys": ["name"] }
+    },
     "properties": {
       "category": {
         "type": "string",
-        "enum": ["ACTION", "COMEDY", "SPORT"],
+        "$ref": "Stuff",
         "default": "ACTION",
         "required": true
       },
