@@ -76,7 +76,10 @@ def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list
 
                 if v.type == ESchemaType.UNKNOWN:
                     if v.typename:
-                        mark = f':{v.typename}'
+                        if v.typename == 'file':
+                            mark = ''
+                        else:
+                            mark = f':{v.typename}'
                 if v.ref:
                     if isinstance(v.ref, str):
                         mark = f":'{v.ref}'"
