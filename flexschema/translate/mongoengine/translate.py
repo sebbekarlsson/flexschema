@@ -11,6 +11,12 @@ def makepad(x: int) -> str:
 def pad_left(x: str, pad: int) -> str:
     return f'{makepad(pad)}{x}'
 
+
+def first_upper(x: str):
+    if len(x) <= 0:
+        return x
+    return x[0].upper() + x[1:]
+
 def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list[str] | None = None) -> Translation:
     enums: list[str] = []
     classes: list[str] = []
@@ -34,7 +40,7 @@ def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list
     }
 
     def make_enum(name: str, keys: list[str]):
-        ename = f'E{name.title()}'
+        ename = f'E{first_upper(name)}'
         content = ''
         content += f'class {ename}(StrEnum):\n'
         content += '\n'.join(list(map(lambda x: f'{makepad(4)}{x} = "{x}"', keys)))
@@ -44,7 +50,7 @@ def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list
     def make_class(schema: SchemaObject):
         content = ''
         name = schema.key or f'SomeObject'
-        name = name.replace(' ', '').title()
+        name = first_upper(name.replace(' ', ''))
         baseclass_args = schema.meta.get('baseclass_args', dict())
         baseclass_args_str = ','.join(map(lambda x: f'{x[0]}={x[1]}',list(baseclass_args.items())))
         suffix = f'({baseclass_args_str})' if baseclass_args_str else ''

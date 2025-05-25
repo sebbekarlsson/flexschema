@@ -9,9 +9,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "Complex Object",
     "type": "object",
-    "meta": {
-      "baseclass_args": { "keys": ["name"] }
-    },
+    "meta": { "baseclass_args": { "keys": ["name"] } },
     "properties": {
       "category": {
         "type": "string",
