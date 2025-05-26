@@ -80,6 +80,8 @@ def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list
                             mark = ''
                         else:
                             mark = f':{v.typename}'
+                elif v.type == ESchemaType.DATE:
+                    mark = ':datetime.datetime'
                 if v.ref:
                     if isinstance(v.ref, str):
                         mark = f":'{v.ref}'"
@@ -152,6 +154,11 @@ def _translate(schema: AnySchema, base_class: str = 'Document', extra_deps: list
                 return f'ListField({trans(schema.items)})'
             else:
                 return 'ListField()'
+        elif schema.type == ESchemaType.DATE:
+            deps.add('from mongoengine import DateTimeField')
+            deps.add('import datetime')
+            flags_str = ', '.join(get_flags(schema))
+            return f'DateTimeField({flags_str})'
         elif schema.type == ESchemaType.UNKNOWN:
             if schema.typename == 'file':
                 deps.add('from mongoengine import FileField')

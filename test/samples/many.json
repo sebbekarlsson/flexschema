@@ -71,5 +71,14 @@
       "avatar": { "type": "file", "$ref": "VirtualFile", "required": false },
       "age": { "type": "integer", "default": 42, "required": true }
     }
+  },
+  {
+    "type": "object",
+    "title": "Article",
+    "properties": {
+      "title": { "type": "string", "required": true },
+      "text": { "type": "string", "required": true },
+      "date_published": { "type": "date", "required": true }
+    }
   }
 ]

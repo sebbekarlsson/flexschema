@@ -60,6 +60,8 @@ def _translate(schema: AnySchema) -> Translation:
                 out.append(f'Array<{trans(schema.items)}>')
             else:
                 out.append('Array<any>')
+        elif schema.type == ESchemaType.DATE:
+            return 'Date'
         elif schema.type == ESchemaType.UNKNOWN:
             return 'unknown'
 

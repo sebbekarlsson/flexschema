@@ -16,6 +16,7 @@ class ESchemaType(StrEnum):
     FLOAT = 'number'
     OBJECT = 'object'
     STRING = 'string'
+    DATE = 'date'
     UNKNOWN = 'UNKNOWN'
 
 
@@ -93,6 +94,9 @@ class SchemaFloat(SchemaNumeric[float]):
 class SchemaBoolean(SchemaBase):
     type: Literal[ESchemaType.BOOLEAN] = FIELD(default_factory=lambda: ESchemaType.BOOLEAN)
 
+@dataclasses.dataclass
+class SchemaDate(SchemaBase):
+    type: Literal[ESchemaType.DATE] = FIELD(default_factory=lambda: ESchemaType.DATE)
 
 @dataclasses.dataclass
 class SchemaNull(SchemaBase):
@@ -110,11 +114,12 @@ _mapping: dict[str, type[SchemaBase]] = {
     ESchemaType.INTEGER: SchemaInteger,
     ESchemaType.FLOAT: SchemaFloat,
     ESchemaType.BOOLEAN: SchemaBoolean,
+    ESchemaType.DATE: SchemaDate,
     ESchemaType.NULL: SchemaNull,
     ESchemaType.UNKNOWN: SchemaUnknown,
 }
 
-AnySchema: TypeAlias = SchemaNull | SchemaArray | SchemaObject | SchemaFloat | SchemaString | SchemaInteger | SchemaBoolean | SchemaUnknown | dict[str, 'AnySchema'] | list['AnySchema']
+AnySchema: TypeAlias = SchemaNull | SchemaArray | SchemaObject | SchemaFloat | SchemaString | SchemaInteger | SchemaBoolean | SchemaDate | SchemaUnknown | dict[str, 'AnySchema'] | list['AnySchema']
 
 def parse(
     data: dict,
